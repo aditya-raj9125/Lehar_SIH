@@ -119,15 +119,51 @@ export default function MapViewer() {
 
   // Load reports from localStorage on component mount
   useEffect(() => {
-    const storedReports = localStorage.getItem('hazardReports');
-    if (storedReports) {
-      try {
-        const parsedReports = JSON.parse(storedReports);
-        setReports(prev => [...prev, ...parsedReports]);
-      } catch (error) {
-        console.error('Failed to parse stored reports:', error);
+    const loadReports = () => {
+      const storedReports = localStorage.getItem('hazardReports');
+      console.log('🗺️ MapViewer loading reports...');
+      console.log('📦 Stored reports:', storedReports);
+      
+      if (storedReports) {
+        try {
+          const parsedReports = JSON.parse(storedReports);
+          const allReports = [...sampleReports, ...parsedReports];
+          console.log('📋 Sample reports:', sampleReports.length);
+          console.log('📋 Parsed reports:', parsedReports.length);
+          console.log('📋 Total reports:', allReports.length);
+          setReports(allReports);
+        } catch (error) {
+          console.error('Failed to parse stored reports:', error);
+          setReports(sampleReports);
+        }
+      } else {
+        console.log('❌ No stored reports found, using sample reports');
+        setReports(sampleReports);
       }
-    }
+    };
+
+    // Load initial reports
+    loadReports();
+
+    // Listen for new reports
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'hazardReports') {
+        loadReports();
+      }
+    };
+
+    // Listen for custom events (for same-tab updates)
+    const handleNewReport = () => {
+      loadReports();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('newReportAdded', handleNewReport);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('newReportAdded', handleNewReport);
+    };
   }, []);
 
   // Load map after component mounts
@@ -196,12 +232,12 @@ export default function MapViewer() {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto p-4 grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-4">
+      <main className="container mx-auto p-2 grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-2">
       <Card>
         <CardHeader>
           <CardTitle>Layers</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 py-6">
           <div className="space-y-4">
             <label className="flex items-center gap-3">
               <Checkbox checked={layers.citizenReports} onCheckedChange={(v) => setLayers(prev => ({ ...prev, citizenReports: Boolean(v) }))} />
@@ -221,7 +257,7 @@ export default function MapViewer() {
           <div className="space-y-4">
             <h3 className="font-semibold">Filters</h3>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               <label className="text-sm">Hazard Type</label>
               <Select value={filters.type} onValueChange={(v) => setFilters(prev => ({ ...prev, type: v }))}>
                 <SelectTrigger>
@@ -254,20 +290,6 @@ export default function MapViewer() {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm">Source</label>
-              <Select value={filters.source} onValueChange={(v) => setFilters(prev => ({ ...prev, source: v }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Sources" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Sources</SelectItem>
-                  <SelectItem value="citizen">Citizen Reports</SelectItem>
-                  <SelectItem value="social">Social Media</SelectItem>
-                  <SelectItem value="verified">Verified Incidents</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
@@ -303,6 +325,15 @@ export default function MapViewer() {
             <Button variant="outline" className="w-full">
               <Filter className="w-4 h-4 mr-2" /> Apply Filters
             </Button>
+            
+            <Button 
+              onClick={() => navigate('/fullscreen-map')}
+              className="w-full bg-gradient-ocean hover:shadow-ocean shadow-lg"
+              size="sm"
+            >
+              <Maximize2 className="w-4 h-4 mr-2" />
+              View Detailed
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -322,7 +353,7 @@ export default function MapViewer() {
           </div>
         </CardHeader>
         <CardContent className="relative">
-          <div className="h-[70vh] rounded-lg overflow-hidden relative">
+          <div className="h-[85vh] rounded-lg overflow-hidden relative">
             <Suspense fallback={
               <div className="h-full rounded-lg bg-muted/40 flex items-center justify-center">
                 <div className="text-center bg-background border px-6 py-8 rounded-lg shadow-sm">
@@ -334,15 +365,6 @@ export default function MapViewer() {
               <IndiaMap reports={filteredReports} />
             </Suspense>
             
-            {/* View Detailed Button - positioned over the map */}
-            <Button 
-              onClick={() => navigate('/fullscreen-map')}
-              className="absolute bottom-4 right-4 bg-gradient-ocean hover:shadow-ocean shadow-lg z-10"
-              size="sm"
-            >
-              <Maximize2 className="w-4 h-4 mr-2" />
-              View Detailed
-            </Button>
           </div>
         </CardContent>
       </Card>

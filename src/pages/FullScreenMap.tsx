@@ -1,16 +1,5 @@
-import { useState, useEffect, Suspense, lazy } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, MessageSquare, MapPin, Filter, Shield, FileText, Phone, X, Maximize2 } from 'lucide-react';
-import { ReportSubmissionModal } from '@/components/Reports/ReportSubmissionModal';
+import { useEffect, useRef, useState } from 'react';
 import { HazardReport } from '@/types';
-
-// Lazy load the map component to avoid SSR issues
-const IndiaMap = lazy(() => import('@/components/Map/IndiaMap'));
 
 // Sample hazard reports data for the map
 const sampleReports: HazardReport[] = [
@@ -59,62 +48,9 @@ const sampleReports: HazardReport[] = [
 ];
 
 export default function FullScreenMap() {
-  const navigate = useNavigate();
-  const [layers, setLayers] = useState({
-    citizenReports: true,
-    socialMedia: true,
-    officialReports: false,
-  });
-
-  const [filters, setFilters] = useState({
-    type: 'all',
-    timeRange: '24h',
-    source: 'all',
-    verification: 'all',
-    severity: 'all',
-  });
-
-  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
   const [reports, setReports] = useState<HazardReport[]>(sampleReports);
-
-  const handleReportSubmit = (reportData: Partial<HazardReport>) => {
-    console.log('Report submitted from FullScreenMap:', reportData);
-    // Add new report to the map
-    if (reportData.latitude && reportData.longitude) {
-      const newReport: HazardReport = {
-        id: Date.now().toString(),
-        userId: 'guest',
-        userName: 'Guest User',
-        type: reportData.type || 'other',
-        description: reportData.description || '',
-        location: reportData.location || 'Unknown Location',
-        latitude: reportData.latitude,
-        longitude: reportData.longitude,
-        timestamp: new Date().toISOString(),
-        severity: reportData.severity || 'medium',
-        status: 'received',
-        source: 'citizen',
-      };
-      setReports(prev => [...prev, newReport]);
-    }
-  };
-
-  // Filter reports based on current filters and layers
-  const filteredReports = reports.filter(report => {
-    if (!layers.citizenReports && report.source === 'citizen') return false;
-    if (!layers.socialMedia && report.source === 'social') return false;
-    if (!layers.officialReports && report.source === 'official') return false;
-    
-    if (filters.type !== 'all' && report.type !== filters.type) return false;
-    if (filters.source !== 'all' && report.source !== filters.source) return false;
-    if (filters.severity !== 'all' && report.severity !== filters.severity) return false;
-    if (filters.verification !== 'all') {
-      if (filters.verification === 'verified' && report.status !== 'verified') return false;
-      if (filters.verification === 'unverified' && report.status === 'verified') return false;
-    }
-    
-    return true;
-  });
 
   // Load reports from localStorage on component mount
   useEffect(() => {
@@ -122,175 +58,118 @@ export default function FullScreenMap() {
     if (storedReports) {
       try {
         const parsedReports = JSON.parse(storedReports);
-        setReports(prev => [...prev, ...parsedReports]);
+        setReports([...sampleReports, ...parsedReports]);
       } catch (error) {
         console.error('Failed to parse stored reports:', error);
+        setReports(sampleReports);
       }
+    } else {
+      setReports(sampleReports);
     }
   }, []);
 
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-ocean rounded"></div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">LEHAR</h1>
-              <p className="text-xs text-muted-foreground">Ocean Hazard Reporting System</p>
-            </div>
-          </div>
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    const loadMap = async () => {
+      try {
+        // Dynamic import to avoid SSR issues
+        const L = await import('leaflet');
+        await import('leaflet/dist/leaflet.css');
+
+        // Fix for default markers
+        delete (L.default.Icon.Default.prototype as any)._getIconUrl;
+        L.default.Icon.Default.mergeOptions({
+          iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+          iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+        });
+
+        // Create map instance
+        const map = L.default.map(mapRef.current!).setView([20.5937, 78.9629], 6);
+
+        // Add tile layer
+        L.default.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors',
+          maxZoom: 18,
+        }).addTo(map);
+
+        // Store map instance
+        mapInstanceRef.current = map;
+
+        // Add markers for reports
+        reports.forEach((report) => {
+          let markerColor = '#3b82f6'; // Default blue
           
-          <div className="flex items-center space-x-3">
-            <Button 
-              variant="ghost" 
-              onClick={() => setIsReportModalOpen(true)}
-              className="text-foreground hover:text-primary"
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              Report Now
-            </Button>
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate('/dashboard')}
-              className="text-foreground hover:text-primary"
-            >
-              Dashboard
-            </Button>
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate('/map')}
-              className="text-foreground hover:text-primary"
-            >
-              Map Viewer
-            </Button>
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate('/')}
-              className="text-foreground hover:text-primary"
-            >
-              Home
-            </Button>
-          </div>
-        </div>
-      </header>
+          // Color based on source
+          if (report.source === 'citizen') markerColor = '#3b82f6'; // Blue
+          if (report.source === 'official') markerColor = '#10b981'; // Green
+          if (report.source === 'social') markerColor = '#f59e0b'; // Orange
+          
+          // Color based on severity
+          if (report.severity === 'high') markerColor = '#ef4444'; // Red
+          if (report.severity === 'critical') markerColor = '#dc2626'; // Dark red
 
-      {/* Main Content */}
-      <main className="flex h-[calc(100vh-64px)]">
-        {/* Sidebar Controls */}
-        <div className="w-80 border-r bg-background/50 backdrop-blur-sm overflow-y-auto">
-          <div className="p-4 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Maximize2 className="w-5 h-5" />
-                  Full Screen Map
-                </CardTitle>
-                <CardDescription>
-                  Interactive map of India with hazard reports
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <h3 className="font-semibold">Layers</h3>
-                  <label className="flex items-center gap-3">
-                    <Checkbox checked={layers.citizenReports} onCheckedChange={(v) => setLayers(prev => ({ ...prev, citizenReports: Boolean(v) }))} />
-                    <span className="flex items-center gap-2"><MapPin className="w-4 h-4" /> Citizen Reports</span>
-                  </label>
-                  <label className="flex items-center gap-3">
-                    <Checkbox checked={layers.socialMedia} onCheckedChange={(v) => setLayers(prev => ({ ...prev, socialMedia: Boolean(v) }))} />
-                    <span className="flex items-center gap-2"><MessageSquare className="w-4 h-4" /> Social Media</span>
-                  </label>
-                  <label className="flex items-center gap-3">
-                    <Checkbox checked={layers.officialReports} onCheckedChange={(v) => setLayers(prev => ({ ...prev, officialReports: Boolean(v) }))} />
-                    <span className="flex items-center gap-2"><Shield className="w-4 h-4" /> Official Reports</span>
-                  </label>
-                </div>
+          // Create custom icon
+          const customIcon = L.default.divIcon({
+            className: 'custom-div-icon',
+            html: `<div style="background-color: ${markerColor}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+            iconSize: [20, 20],
+            iconAnchor: [10, 10],
+          });
 
-                <div className="space-y-3">
-                  <h3 className="font-semibold">Filters</h3>
-                  <div className="space-y-2">
-                    <label className="text-sm">Hazard Type</label>
-                    <Select value={filters.type} onValueChange={(v) => setFilters(prev => ({ ...prev, type: v }))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="All Types" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Types</SelectItem>
-                        <SelectItem value="tsunami">Tsunami</SelectItem>
-                        <SelectItem value="high-waves">High Waves</SelectItem>
-                        <SelectItem value="storm-surge">Storm Surge</SelectItem>
-                        <SelectItem value="coastal-damage">Coastal Damage</SelectItem>
-                        <SelectItem value="unusual-tides">Unusual Tides</SelectItem>
-                        <SelectItem value="swell-surge">Swell Surge</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+          // Add marker
+          const marker = L.default.marker([report.latitude, report.longitude], { icon: customIcon })
+            .addTo(map);
 
-                  <div className="space-y-2">
-                    <label className="text-sm">Source</label>
-                    <Select value={filters.source} onValueChange={(v) => setFilters(prev => ({ ...prev, source: v }))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="All Sources" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Sources</SelectItem>
-                        <SelectItem value="citizen">Citizen Reports</SelectItem>
-                        <SelectItem value="social">Social Media</SelectItem>
-                        <SelectItem value="verified">Verified Incidents</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm">Severity</label>
-                    <Select value={filters.severity} onValueChange={(v) => setFilters(prev => ({ ...prev, severity: v }))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="All" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All</SelectItem>
-                        <SelectItem value="low">Low</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                        <SelectItem value="critical">Critical</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  {layers.citizenReports && <Badge variant="secondary" className="flex items-center gap-1"><MapPin className="w-3 h-3" /> Reports</Badge>}
-                  {layers.socialMedia && <Badge variant="secondary" className="flex items-center gap-1"><MessageSquare className="w-3 h-3" /> Social</Badge>}
-                  {layers.officialReports && <Badge variant="secondary" className="flex items-center gap-1"><Shield className="w-3 h-3" /> Official</Badge>}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Map Area */}
-        <div className="flex-1 relative">
-          <Suspense fallback={
-            <div className="h-full flex items-center justify-center bg-muted/40">
-              <div className="text-center bg-background border px-6 py-8 rounded-lg shadow-sm">
-                <h3 className="text-2xl font-semibold mb-2">Loading Map...</h3>
-                <p className="text-muted-foreground mb-2">Initializing full-screen map of India</p>
+          // Add popup
+          marker.bindPopup(`
+            <div style="padding: 8px; min-width: 200px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <div style="width: 12px; height: 12px; border-radius: 50%; background-color: ${markerColor};"></div>
+                <span style="font-weight: bold; text-transform: capitalize;">${report.type.replace('-', ' ')}</span>
+                <span style="padding: 2px 6px; border-radius: 12px; font-size: 10px; background-color: ${
+                  report.severity === 'high' ? '#fee2e2' : 
+                  report.severity === 'medium' ? '#fef3c7' : 
+                  report.severity === 'low' ? '#d1fae5' : '#f3f4f6'
+                }; color: ${
+                  report.severity === 'high' ? '#dc2626' : 
+                  report.severity === 'medium' ? '#d97706' : 
+                  report.severity === 'low' ? '#059669' : '#374151'
+                };">${report.severity}</span>
+              </div>
+              <p style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">${report.description}</p>
+              <div style="font-size: 10px; color: #6b7280;">
+                <p><strong>Location:</strong> ${report.location}</p>
+                <p><strong>Reported by:</strong> ${report.userName}</p>
+                <p><strong>Source:</strong> ${report.source}</p>
+                <p><strong>Status:</strong> ${report.status}</p>
+                <p><strong>Time:</strong> ${new Date(report.timestamp).toLocaleString()}</p>
               </div>
             </div>
-          }>
-            <IndiaMap reports={filteredReports} />
-          </Suspense>
-        </div>
-      </main>
+          `);
+        });
 
-      {/* Report Modal */}
-      <ReportSubmissionModal
-        open={isReportModalOpen}
-        onClose={() => setIsReportModalOpen(false)}
-        onSubmit={handleReportSubmit}
-      />
-    </div>
+      } catch (error) {
+        console.error('Failed to load map:', error);
+      }
+    };
+
+    loadMap();
+
+    // Cleanup
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+      }
+    };
+  }, [reports]);
+
+  return (
+    <div 
+      ref={mapRef} 
+      style={{ height: '100vh', width: '100vw' }}
+      className="rounded-lg"
+    />
   );
 }

@@ -9,8 +9,15 @@ const IndiaMap = ({ reports }: IndiaMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
 
+  console.log('IndiaMap component rendering with reports:', reports.length);
+
   useEffect(() => {
-    if (!mapRef.current) return;
+    if (!mapRef.current) {
+      console.log('Map ref not available yet');
+      return;
+    }
+    
+    console.log('Starting map initialization...');
 
     const loadMap = async () => {
       try {
@@ -37,9 +44,27 @@ const IndiaMap = ({ reports }: IndiaMapProps) => {
 
         // Store map instance
         mapInstanceRef.current = map;
+        console.log('Map initialized successfully!');
 
         // Add markers for reports
-        reports.forEach((report) => {
+        console.log('🗺️ Adding markers for', reports.length, 'reports');
+        reports.forEach((report, index) => {
+          console.log(`📍 Report ${index + 1}:`, {
+            id: report.id,
+            location: report.location,
+            type: report.type,
+            userName: report.userName
+          });
+
+          // Get coordinates from location object
+          const lat = report.location?.lat || report.latitude;
+          const lng = report.location?.lng || report.longitude;
+          
+          if (!lat || !lng) {
+            console.warn('❌ Report missing coordinates:', report);
+            return;
+          }
+
           let markerColor = '#3b82f6'; // Default blue
           
           // Color based on source
@@ -60,7 +85,7 @@ const IndiaMap = ({ reports }: IndiaMapProps) => {
           });
 
           // Add marker
-          const marker = L.default.marker([report.latitude, report.longitude], { icon: customIcon })
+          const marker = L.default.marker([lat, lng], { icon: customIcon })
             .addTo(map);
 
           // Add popup
@@ -81,7 +106,7 @@ const IndiaMap = ({ reports }: IndiaMapProps) => {
               </div>
               <p style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">${report.description}</p>
               <div style="font-size: 10px; color: #6b7280;">
-                <p><strong>Location:</strong> ${report.location}</p>
+                <p><strong>Location:</strong> ${report.location?.address || report.location || 'Unknown'}</p>
                 <p><strong>Reported by:</strong> ${report.userName}</p>
                 <p><strong>Source:</strong> ${report.source}</p>
                 <p><strong>Status:</strong> ${report.status}</p>
@@ -93,6 +118,7 @@ const IndiaMap = ({ reports }: IndiaMapProps) => {
 
       } catch (error) {
         console.error('Failed to load map:', error);
+        console.error('Error details:', error);
       }
     };
 

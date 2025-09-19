@@ -79,18 +79,43 @@ export default function Dashboard() {
 
   // Load reports from localStorage
   useEffect(() => {
-    const storedReports = localStorage.getItem('hazardReports');
-    if (storedReports) {
-      try {
-        const parsedReports = JSON.parse(storedReports);
-        setReports([...sampleReports, ...parsedReports]);
-      } catch (error) {
-        console.error('Failed to parse stored reports:', error);
+    const loadReports = () => {
+      const storedReports = localStorage.getItem('hazardReports');
+      if (storedReports) {
+        try {
+          const parsedReports = JSON.parse(storedReports);
+          setReports([...sampleReports, ...parsedReports]);
+        } catch (error) {
+          console.error('Failed to parse stored reports:', error);
+          setReports(sampleReports);
+        }
+      } else {
         setReports(sampleReports);
       }
-    } else {
-      setReports(sampleReports);
-    }
+    };
+
+    // Load initial reports
+    loadReports();
+
+    // Listen for new reports
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'hazardReports') {
+        loadReports();
+      }
+    };
+
+    // Listen for custom events (for same-tab updates)
+    const handleNewReport = () => {
+      loadReports();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('newReportAdded', handleNewReport);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('newReportAdded', handleNewReport);
+    };
   }, []);
 
   const handleMapClick = (lat: number, lng: number) => {
@@ -262,11 +287,12 @@ export default function Dashboard() {
                 <IndiaMap reports={reports} />
               </Suspense>
               
-              {/* View Detailed Button - positioned over the map */}
+              {/* View Detailed Button - positioned in bottom right corner */}
               <Button 
                 onClick={() => navigate('/fullscreen-map')}
-                className="absolute bottom-16 right-4 bg-gradient-ocean hover:shadow-ocean shadow-lg z-10"
+                className="absolute bottom-4 right-4 bg-gradient-ocean hover:shadow-ocean shadow-lg z-[9999]"
                 size="sm"
+                style={{ zIndex: 9999 }}
               >
                 <Maximize2 className="w-4 h-4 mr-2" />
                 View Detailed

@@ -10,6 +10,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogOverlay,
 } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -54,6 +55,7 @@ export const ReportSubmissionModal = ({
     severity: '' as HazardReport['severity'],
     images: [] as File[],
     reporterContact: '',
+    reporterName: '',
   });
   const [locationError, setLocationError] = useState('');
   const [duplicateReports, setDuplicateReports] = useState<HazardReport[]>([]);
@@ -165,7 +167,7 @@ export const ReportSubmissionModal = ({
     try {
       const reportData: Partial<HazardReport> = {
         userId: user?.id || '',
-        userName: user?.name || 'Anonymous',
+        userName: user?.name || formData.reporterName || 'Anonymous',
         type: formData.type,
         title: formData.title,
         description: formData.description,
@@ -175,12 +177,77 @@ export const ReportSubmissionModal = ({
         verified: false,
         images: formData.images.map((_, index) => `image_${Date.now()}_${index}.jpg`), // Mock file names
         reporterContact: user ? undefined : formData.reporterContact,
+        reporterName: user ? undefined : formData.reporterName,
       };
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      // Save to backend database
       try {
+        const token = localStorage.getItem('accessToken');
+        const requestBody = {
+          type: reportData.type,
+          title: reportData.title,
+          description: reportData.description,
+          location: reportData.location,
+          severity: reportData.severity,
+          reporterName: reportData.userName,
+          reporterContact: reportData.reporterContact,
+          images: reportData.images || []
+        };
+        
+        console.log('🚀 Sending report to database:', requestBody);
+        console.log('🔑 Using token:', token ? 'Yes' : 'No');
+        
+        const response = await fetch('http://localhost:5000/api/reports', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token && { 'Authorization': `Bearer ${token}` })
+          },
+          body: JSON.stringify(requestBody)
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log('✅ Report saved to database:', result);
+          
+          // Also save to localStorage for frontend
+          const raw = localStorage.getItem('hazardReports');
+          const list: HazardReport[] = raw ? JSON.parse(raw) : [];
+          const persisted: HazardReport = {
+            id: result.report.id,
+            userId: reportData.userId || '',
+            userName: reportData.userName || 'Anonymous',
+            type: reportData.type!,
+            title: reportData.title || '',
+            description: reportData.description || '',
+            location: reportData.location!,
+            severity: reportData.severity!,
+            timestamp: reportData.timestamp!,
+            verified: false,
+            images: reportData.images || [],
+            reporterContact: reportData.reporterContact,
+            status: 'received',
+            source: user ? 'citizen' : 'citizen',
+          };
+          const updatedReports = [persisted, ...list];
+          localStorage.setItem('hazardReports', JSON.stringify(updatedReports));
+          
+          console.log('✅ Report also saved to localStorage:', persisted);
+          console.log('📊 Total reports now:', updatedReports.length);
+          
+          // Dispatch custom event to notify maps of new report
+          window.dispatchEvent(new CustomEvent('newReportAdded'));
+          
+          onSubmit(reportData);
+        } else {
+          const errorData = await response.json();
+          console.error('❌ Database save failed:', response.status, errorData);
+          throw new Error(`Database save failed: ${response.status} - ${errorData.message || 'Unknown error'}`);
+        }
+      } catch (error) {
+        console.error('❌ Database save failed, saving to localStorage only:', error);
+        
+        // Fallback: save to localStorage only
         const raw = localStorage.getItem('hazardReports');
         const list: HazardReport[] = raw ? JSON.parse(raw) : [];
         const persisted: HazardReport = {
@@ -199,9 +266,15 @@ export const ReportSubmissionModal = ({
           status: 'received',
           source: user ? 'citizen' : 'citizen',
         };
-        localStorage.setItem('hazardReports', JSON.stringify([persisted, ...list]));
-        onSubmit(reportData);
-      } catch {
+        const updatedReports = [persisted, ...list];
+        localStorage.setItem('hazardReports', JSON.stringify(updatedReports));
+        
+        console.log('✅ Report saved to localStorage (fallback):', persisted);
+        console.log('📊 Total reports now:', updatedReports.length);
+        
+        // Dispatch custom event to notify maps of new report
+        window.dispatchEvent(new CustomEvent('newReportAdded'));
+        
         onSubmit(reportData);
       }
       onClose();
@@ -224,8 +297,12 @@ export const ReportSubmissionModal = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={open} onOpenChange={onClose} modal={true}>
+      <DialogOverlay className="z-[99998] bg-transparent" style={{ zIndex: 99998, backgroundColor: 'transparent' }} />
+      <DialogContent 
+        className="max-w-2xl max-h-[90vh] overflow-y-auto z-[99999]" 
+        style={{ zIndex: 99999 }}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-warning" />
@@ -237,6 +314,22 @@ export const ReportSubmissionModal = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Name field for guests */}
+          {!user && (
+            <div className="space-y-2">
+              <Label htmlFor="name">Your Name</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Enter your full name"
+                value={formData.reporterName}
+                onChange={(e) => setFormData(prev => ({ ...prev, reporterName: e.target.value }))}
+                required
+              />
+              <p className="text-xs text-muted-foreground">Required for official follow-up</p>
+            </div>
+          )}
+
           {/* Contact info for guests */}
           {!user && (
             <div className="space-y-2">
@@ -305,7 +398,7 @@ export const ReportSubmissionModal = ({
               <SelectTrigger>
                 <SelectValue placeholder="Select the type of hazard" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[100000]" position="popper">
                 {hazardTypes.map((type) => (
                   <SelectItem key={type.value} value={type.value}>
                     <span className="flex items-center gap-2">

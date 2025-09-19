@@ -4,9 +4,9 @@ import { User } from '@/types';
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
-  register: (name: string, email: string, password: string, role: User['role']) => Promise<boolean>;
+  register: (name: string, email: string, password: string, role: User['role']) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,55 +26,72 @@ interface AuthProviderProps {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
 
-  // Mock authentication - replace with real API calls
-  const login = async (email: string, password: string): Promise<boolean> => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock user data based on email
-    const mockUsers: { [key: string]: User } = {
-      'citizen@test.com': {
-        id: '1',
-        name: 'John Citizen',
-        email: 'citizen@test.com',
-        role: 'citizen',
-      },
-      'official@incois.gov.in': {
-        id: '2',
-        name: 'Dr. Sarah Official',
-        email: 'official@incois.gov.in',
-        role: 'official',
-      },
-    };
+  // Real API authentication
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const mockUser = mockUsers[email];
-    if (mockUser && password === 'password') {
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      return true;
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Store tokens
+        localStorage.setItem('accessToken', data.accessToken);
+        localStorage.setItem('refreshToken', data.refreshToken);
+        
+        // Set user data
+        setUser(data.user);
+        return { success: true };
+      } else {
+        console.error('Login failed:', data.message);
+        return { success: false, error: data.message || 'Login failed' };
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      return { success: false, error: 'Network error. Please check your connection.' };
     }
-    return false;
   };
 
-  const register = async (name: string, email: string, password: string, role: User['role']): Promise<boolean> => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const newUser: User = {
-      id: Date.now().toString(),
-      name,
-      email,
-      role,
-    };
-    
-    setUser(newUser);
-    localStorage.setItem('user', JSON.stringify(newUser));
-    return true;
+  const register = async (name: string, email: string, password: string, role: User['role']): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password, role }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Store tokens
+        localStorage.setItem('accessToken', data.accessToken);
+        localStorage.setItem('refreshToken', data.refreshToken);
+        
+        // Set user data
+        setUser(data.user);
+        return { success: true };
+      } else {
+        console.error('Registration failed:', data.message);
+        return { success: false, error: data.message || 'Registration failed' };
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      return { success: false, error: 'Network error. Please check your connection.' };
+    }
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
   };
 
   // Check for stored user on mount

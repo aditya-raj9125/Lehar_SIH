@@ -103,11 +103,35 @@ export default function Reports() {
 
   // load from localStorage
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem('hazardReports');
-      const local: HazardReport[] = raw ? JSON.parse(raw) : [];
-      if (local.length) setReports(prev => [...local, ...prev]);
-    } catch {}
+    const loadReports = () => {
+      try {
+        const raw = localStorage.getItem('hazardReports');
+        const local: HazardReport[] = raw ? JSON.parse(raw) : [];
+        if (local.length) setReports(prev => [...local, ...prev]);
+      } catch {}
+    };
+
+    // Load initial reports
+    loadReports();
+
+    // Listen for new reports
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'hazardReports') {
+        loadReports();
+      }
+    };
+
+    const handleNewReport = () => {
+      loadReports();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('newReportAdded', handleNewReport);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('newReportAdded', handleNewReport);
+    };
   }, []);
 
   const persist = (list: HazardReport[]) => {
@@ -137,6 +161,10 @@ export default function Reports() {
     setReports(prev => {
       const updated = [newReport, ...prev];
       persist(updated);
+      
+      // Dispatch custom event to notify maps of new report
+      window.dispatchEvent(new CustomEvent('newReportAdded'));
+      
       return updated;
     });
   };

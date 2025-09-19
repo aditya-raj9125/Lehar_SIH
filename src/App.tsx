@@ -13,6 +13,7 @@ import MapViewer from "./pages/MapViewer";
 import FullScreenMap from "./pages/FullScreenMap";
 import OfficialLogin from "./pages/OfficialLogin";
 import NotFound from "./pages/NotFound";
+import TestAuth from "./pages/TestAuth";
 
 const queryClient = new QueryClient();
 
@@ -46,43 +47,46 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Landing page accessible to all users */}
-            <Route path="/" element={<Landing />} />
-            <Route path="/home" element={<Landing />} />
-            
-            {/* Public routes */}
-            <Route path="/auth" element={
-              <PublicRoute>
-                <AuthForm />
-              </PublicRoute>
-            } />
-            
-            {/* Official Login */}
-            <Route path="/official-login" element={
-              <PublicRoute>
-                <OfficialLogin />
-              </PublicRoute>
-            } />
-            
-            {/* Dashboard is public */}
-            <Route path="/dashboard" element={
-              <Layout />
-            }>
-              <Route index element={<Dashboard />} />
-            </Route>
-            
-            {/* Reports is public */}
-            <Route path="/reports" element={
-              <Layout />
-            }>
-              <Route index element={<Reports />} />
-            </Route>
+              {/* Landing page accessible to all users */}
+              <Route path="/" element={<Landing />} />
+              <Route path="/home" element={<Landing />} />
+              
+              {/* Public routes */}
+              <Route path="/auth" element={
+                <PublicRoute>
+                  <AuthForm />
+                </PublicRoute>
+              } />
+              
+              {/* Official Login */}
+              <Route path="/official-login" element={
+                <PublicRoute>
+                  <OfficialLogin />
+                </PublicRoute>
+              } />
+              
+              {/* Dashboard is public */}
+              <Route path="/dashboard" element={
+                <Layout />
+              }>
+                <Route index element={<Dashboard />} />
+              </Route>
+              
+              {/* Reports is public */}
+              <Route path="/reports" element={
+                <Layout />
+              }>
+                <Route index element={<Reports />} />
+              </Route>
 
-            {/* Map Viewer is public (standalone, no Layout) */}
-            <Route path="/map" element={<MapViewer />} />
-            
-            {/* Full Screen Map */}
-            <Route path="/fullscreen-map" element={<FullScreenMap />} />
+              {/* Map Viewer is public (standalone, no Layout) */}
+              <Route path="/map" element={<MapViewer />} />
+              
+              {/* Full Screen Map */}
+              <Route path="/fullscreen-map" element={<FullScreenMap />} />
+              
+              {/* Test Auth Page */}
+              <Route path="/test-auth" element={<TestAuth />} />
             
             <Route path="/all-reports" element={
               <ProtectedRoute>

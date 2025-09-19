@@ -25,6 +25,7 @@ export interface HazardReport {
   verified: boolean;
   socialMediaMentions?: number;
   reporterContact?: string; // Optional contact when submitting without authentication
+  reporterName?: string; // Optional name when submitting without authentication
   status?: 'received' | 'under-review' | 'verified' | 'rejected';
   source?: 'citizen' | 'official' | 'social';
 }

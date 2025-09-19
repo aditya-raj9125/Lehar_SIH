@@ -51,11 +51,11 @@ export const AuthForm = () => {
     setError('');
 
     try {
-      const success = await login(loginData.email, loginData.password);
-      if (success) {
+      const result = await login(loginData.email, loginData.password);
+      if (result.success) {
         navigate('/dashboard');
       } else {
-        setError('Invalid email or password');
+        setError(result.error || 'Invalid email or password');
       }
     } catch (err) {
       setError('Login failed. Please try again.');
@@ -76,16 +76,16 @@ export const AuthForm = () => {
     }
 
     try {
-      const success = await register(
+      const result = await register(
         registerData.name,
         registerData.email,
         registerData.password,
         (registerData.role || 'citizen')
       );
-      if (success) {
+      if (result.success) {
         navigate('/dashboard');
       } else {
-        setError('Registration failed. Please try again.');
+        setError(result.error || 'Registration failed. Please try again.');
       }
     } catch (err) {
       setError('Registration failed. Please try again.');

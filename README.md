@@ -1,9 +1,7 @@
 # LEHAR - Coastal Hazard Monitoring System
-
 A comprehensive coastal hazard monitoring system that allows citizens to report coastal hazards and officials to monitor and manage them through interactive maps and dashboards.
 
 ## 🌊 Overview
-
 LEHAR is a full-stack application that combines:
 - **Frontend**: React-based web application with interactive maps
 - **Backend**: Node.js/Express API with PostgreSQL database
@@ -13,16 +11,13 @@ LEHAR is a full-stack application that combines:
 ## 🚀 Quick Start
 
 ### Prerequisites
-
 Before running the project, ensure you have installed:
-
 - **Node.js** (v16 or higher)
 - **PostgreSQL** (v12 or higher)
 - **Redis** (v6 or higher)
 - **Git**
 
 ### Installation
-
 1. **Clone the repository**
    ```bash
    git clone https://github.com/aditya-raj9125/Lehar_SIH_2025.git
@@ -117,29 +112,6 @@ Before running the project, ensure you have installed:
 - **Backend API**: http://localhost:5000
 - **API Health Check**: http://localhost:5000/health
 
-## 📱 Features
-
-### For Citizens
-- Report coastal hazards with location and photos
-- View interactive maps with hazard reports
-- Real-time updates on hazard status
-- Guest reporting without registration
-
-### For Officials
-- Access official dashboard
-- Verify and manage reports
-- Monitor hazard trends
-- Update report status
-
-### Interactive Maps
-- Real-time hazard visualization
-- Filter by hazard type, severity, and source
-- Full-screen map view
-- Location-based reporting
-
-## 🔧 Development
-
-### Available Scripts
 
 #### Frontend
 ```bash
@@ -189,48 +161,6 @@ Lehar_SIH_2025/
 - **map_hotspots**: Map hotspot data
 - **refresh_tokens**: JWT refresh tokens
 
-## 🔐 Authentication
-
-### User Roles
-- **citizen**: Can report hazards and view maps
-- **official**: Can manage and verify reports
-
-### Demo Credentials
-- **Citizen**: `citizen@example.com` / `password123`
-- **Official**: `official@incois.gov.in` / `official123`
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **Backend not starting**
-   - Check if PostgreSQL is running
-   - Verify Redis is running
-   - Check environment variables in `.env`
-
-2. **Database connection errors**
-   - Ensure PostgreSQL is installed and running
-   - Verify database credentials in `.env`
-   - Run migrations: `npm run migrate`
-
-3. **Frontend not loading**
-   - Check if backend is running on port 5000
-   - Verify CORS configuration
-   - Check browser console for errors
-
-4. **Reports not showing on map**
-   - Check browser console for errors
-   - Verify localStorage has report data
-   - Check backend API responses
-
-### Debug Mode
-Enable detailed logging by checking browser console (F12) for:
-- Report submission logs
-- API call responses
-- Map loading status
-- Error messages
-
-## 📚 API Documentation
 
 ### Authentication Endpoints
 - `POST /api/auth/register` - User registration

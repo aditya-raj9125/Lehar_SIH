@@ -20,9 +20,7 @@ const sampleReports: HazardReport[] = [
     userName: 'John Citizen',
     type: 'tsunami',
     description: 'Unusual wave activity observed near the coast',
-    location: 'Chennai, Tamil Nadu',
-    latitude: 13.0827,
-    longitude: 80.2707,
+    location: { lat: 13.0827, lng: 80.2707, address: 'Chennai, Tamil Nadu' },
     timestamp: new Date().toISOString(),
     severity: 'medium',
     status: 'received',
@@ -34,9 +32,7 @@ const sampleReports: HazardReport[] = [
     userName: 'Sarah Official',
     type: 'high-waves',
     description: 'High wave warning issued by IMD',
-    location: 'Mumbai, Maharashtra',
-    latitude: 19.0760,
-    longitude: 72.8777,
+    location: { lat: 19.0760, lng: 72.8777, address: 'Mumbai, Maharashtra' },
     timestamp: new Date().toISOString(),
     severity: 'high',
     status: 'verified',
@@ -48,9 +44,7 @@ const sampleReports: HazardReport[] = [
     userName: 'Mike Reporter',
     type: 'storm-surge',
     description: 'Storm surge reported on social media',
-    location: 'Kolkata, West Bengal',
-    latitude: 22.5726,
-    longitude: 88.3639,
+    location: { lat: 22.5726, lng: 88.3639, address: 'Kolkata, West Bengal' },
     timestamp: new Date().toISOString(),
     severity: 'low',
     status: 'under-review',
@@ -81,16 +75,14 @@ export default function MapViewer() {
   const handleReportSubmit = (reportData: Partial<HazardReport>) => {
     console.log('Report submitted from MapViewer:', reportData);
     // Add new report to the map
-    if (reportData.latitude && reportData.longitude) {
+    if (reportData.location?.lat && reportData.location?.lng) {
       const newReport: HazardReport = {
         id: Date.now().toString(),
         userId: 'guest',
         userName: 'Guest User',
         type: reportData.type || 'other',
         description: reportData.description || '',
-        location: reportData.location || 'Unknown Location',
-        latitude: reportData.latitude,
-        longitude: reportData.longitude,
+        location: reportData.location,
         timestamp: new Date().toISOString(),
         severity: reportData.severity || 'medium',
         status: 'received',

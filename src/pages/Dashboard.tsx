@@ -39,9 +39,7 @@ export default function Dashboard() {
       userName: 'John Citizen',
       type: 'tsunami',
       description: 'Unusual wave activity observed near the coast',
-      location: 'Chennai, Tamil Nadu',
-      latitude: 13.0827,
-      longitude: 80.2707,
+      location: { lat: 13.0827, lng: 80.2707, address: 'Chennai, Tamil Nadu' },
       timestamp: new Date().toISOString(),
       severity: 'medium',
       status: 'received',
@@ -53,9 +51,7 @@ export default function Dashboard() {
       userName: 'Sarah Official',
       type: 'high-waves',
       description: 'High wave warning issued by IMD',
-      location: 'Mumbai, Maharashtra',
-      latitude: 19.0760,
-      longitude: 72.8777,
+      location: { lat: 19.0760, lng: 72.8777, address: 'Mumbai, Maharashtra' },
       timestamp: new Date().toISOString(),
       severity: 'high',
       status: 'verified',
@@ -67,9 +63,7 @@ export default function Dashboard() {
       userName: 'Mike Reporter',
       type: 'storm-surge',
       description: 'Storm surge reported on social media',
-      location: 'Kolkata, West Bengal',
-      latitude: 22.5726,
-      longitude: 88.3639,
+      location: { lat: 22.5726, lng: 88.3639, address: 'Kolkata, West Bengal' },
       timestamp: new Date().toISOString(),
       severity: 'low',
       status: 'under-review',
@@ -81,15 +75,23 @@ export default function Dashboard() {
   useEffect(() => {
     const loadReports = () => {
       const storedReports = localStorage.getItem('hazardReports');
+      console.log('🏠 Dashboard loading reports...');
+      console.log('📦 Stored reports:', storedReports);
+      
       if (storedReports) {
         try {
           const parsedReports = JSON.parse(storedReports);
-          setReports([...sampleReports, ...parsedReports]);
+          const allReports = [...sampleReports, ...parsedReports];
+          console.log('📋 Sample reports:', sampleReports.length);
+          console.log('📋 Parsed reports:', parsedReports.length);
+          console.log('📋 Total reports:', allReports.length);
+          setReports(allReports);
         } catch (error) {
           console.error('Failed to parse stored reports:', error);
           setReports(sampleReports);
         }
       } else {
+        console.log('❌ No stored reports found, using sample reports');
         setReports(sampleReports);
       }
     };
@@ -138,6 +140,9 @@ export default function Dashboard() {
     };
     
     setReports(prev => [newReport, ...prev]);
+    
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new CustomEvent('newReportAdded'));
   };
 
   const statsCards = [

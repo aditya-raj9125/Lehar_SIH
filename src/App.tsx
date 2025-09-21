@@ -12,11 +12,8 @@ import Landing from "./pages/Landing";
 import MapViewer from "./pages/MapViewer";
 import FullScreenMap from "./pages/FullScreenMap";
 import OfficialLogin from "./pages/OfficialLogin";
-<<<<<<< HEAD
 import OfficialDashboard from "./pages/OfficialDashboard";
 import SocialMedia from "./pages/SocialMedia";
-=======
->>>>>>> 794732a7b4774ea245588221f9b8733fc13d24b6
 import NotFound from "./pages/NotFound";
 import TestAuth from "./pages/TestAuth";
 
@@ -24,7 +21,6 @@ const queryClient = new QueryClient();
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-<<<<<<< HEAD
   const { isAuthenticated, user } = useAuth();
   if (!isAuthenticated) {
     // Redirect to appropriate login page based on the protected route
@@ -44,25 +40,16 @@ const OfficialRoleRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/dashboard" replace />;
   }
   return <>{children}</>;
-=======
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? <>{children}</> : <Navigate to="/auth" replace />;
->>>>>>> 794732a7b4774ea245588221f9b8733fc13d24b6
 };
 
 // Public Route Component (redirect if authenticated, except for specific routes)
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
-<<<<<<< HEAD
   const { isAuthenticated, user } = useAuth();
-=======
-  const { isAuthenticated } = useAuth();
->>>>>>> 794732a7b4774ea245588221f9b8733fc13d24b6
   const currentPath = window.location.pathname;
   
   // Allow access to landing page and auth page for non-authenticated users
   if (!isAuthenticated) return <>{children}</>;
   
-<<<<<<< HEAD
   // Redirect authenticated users from public pages to appropriate dashboard
   if (currentPath === '/' || currentPath === '/auth') {
     // Redirect officials to official dashboard, citizens to regular dashboard
@@ -77,10 +64,6 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   
   // Redirect from auth page to dashboard if already authenticated as citizen
   if (currentPath === '/auth' && user?.role === 'citizen') {
-=======
-  // Redirect authenticated users from public pages to dashboard
-  if (currentPath === '/' || currentPath === '/auth') {
->>>>>>> 794732a7b4774ea245588221f9b8733fc13d24b6
     return <Navigate to="/dashboard" replace />;
   }
   
@@ -113,7 +96,6 @@ const App = () => (
                 </PublicRoute>
               } />
               
-<<<<<<< HEAD
               {/* Official Dashboard */}
               <Route path="/official-dashboard" element={
                 <ProtectedRoute>
@@ -123,8 +105,6 @@ const App = () => (
                 </ProtectedRoute>
               } />
               
-=======
->>>>>>> 794732a7b4774ea245588221f9b8733fc13d24b6
               {/* Dashboard is public */}
               <Route path="/dashboard" element={
                 <Layout />
@@ -161,11 +141,7 @@ const App = () => (
                 <Layout />
               </ProtectedRoute>
             }>
-<<<<<<< HEAD
               <Route index element={<SocialMedia />} />
-=======
-              <Route index element={<div className="p-8 text-center text-muted-foreground">Social Media Trends - Coming Soon</div>} />
->>>>>>> 794732a7b4774ea245588221f9b8733fc13d24b6
             </Route>
             
             <Route path="/analytics" element={

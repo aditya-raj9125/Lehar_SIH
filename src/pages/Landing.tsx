@@ -16,6 +16,7 @@ import {
 
 import { ReportSubmissionModal } from '@/components/Reports/ReportSubmissionModal';
 import { HazardReport } from '@/types';
+import { WaveLogo } from '@/components/ui/WaveLogo';
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -59,13 +60,7 @@ const Landing = () => {
       {/* Header */}
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-ocean rounded"></div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">LEHAR</h1>
-              <p className="text-xs text-muted-foreground">Ocean Hazard Reporting System</p>
-            </div>
-          </div>
+          <WaveLogo size="md" textSize="md" />
           
           <nav className="hidden md:flex items-center space-x-6">
             <Button 
@@ -229,11 +224,8 @@ const Landing = () => {
           <div className="grid grid-cols-1 md:grid-cols-5 gap-y-1 md:gap-y-2 gap-x-6 md:gap-x-10">
             {/* Logo and Description */}
             <div className="md:col-span-1 md:pr-32 lg:pr-40">
-              <div className="flex items-center space-x-2 mb-1">
-                <div className="w-8 h-8 bg-white/20 rounded"></div>
-                <div>
-                  <h3 className="text-xl font-bold">LEHAR</h3>
-                </div>
+              <div className="mb-1">
+                <WaveLogo size="md" textSize="md" className="text-white" />
               </div>
               <p className="text-sm opacity-80 leading-relaxed whitespace-nowrap">
                 Localized Early-warning & Hazard Assessment for Response

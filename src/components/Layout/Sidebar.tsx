@@ -19,6 +19,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { WaveLogo } from '@/components/ui/WaveLogo';
 
 interface SidebarProps {
   collapsed: boolean;
@@ -63,20 +64,10 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border">
         {!collapsed && (
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-gradient-ocean rounded-lg">
-              <Waves className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h2 className="font-bold text-lg">LEHAR</h2>
-              <p className="text-xs text-muted-foreground">Ocean Monitoring</p>
-            </div>
-          </div>
+          <WaveLogo size="md" textSize="md" />
         )}
         {collapsed && (
-          <div className="p-2 bg-gradient-ocean rounded-lg mx-auto">
-            <Waves className="w-6 h-6 text-white" />
-          </div>
+          <WaveLogo size="md" showText={false} />
         )}
         <Button
           variant="ghost"

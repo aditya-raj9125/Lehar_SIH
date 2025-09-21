@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
+import { WaveLogo } from '@/components/ui/WaveLogo';
 
 export const Header = () => {
   const { user } = useAuth();
@@ -39,8 +40,9 @@ export const Header = () => {
   return (
     <header className="bg-card border-b border-border px-6 py-4">
       <div className="flex items-center justify-between">
-        {/* Left: Search and Location */}
+        {/* Left: Logo, Search and Location */}
         <div className="flex items-center space-x-4 flex-1">
+          <WaveLogo size="sm" showText={false} />
           <div className="relative max-w-md w-full">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input

@@ -44,12 +44,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         localStorage.setItem('accessToken', data.accessToken);
         localStorage.setItem('refreshToken', data.refreshToken);
         
-<<<<<<< HEAD
         // Store user data in localStorage
         localStorage.setItem('user', JSON.stringify(data.user));
         
-=======
->>>>>>> 794732a7b4774ea245588221f9b8733fc13d24b6
         // Set user data
         setUser(data.user);
         return { success: true };
@@ -80,12 +77,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         localStorage.setItem('accessToken', data.accessToken);
         localStorage.setItem('refreshToken', data.refreshToken);
         
-<<<<<<< HEAD
         // Store user data in localStorage
         localStorage.setItem('user', JSON.stringify(data.user));
         
-=======
->>>>>>> 794732a7b4774ea245588221f9b8733fc13d24b6
         // Set user data
         setUser(data.user);
         return { success: true };

@@ -45,7 +45,11 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+<<<<<<< HEAD
     "date-fns": "^3.6.0",
+=======
+    "date-fns": "^4.1.0",
+>>>>>>> 794732a7b4774ea245588221f9b8733fc13d24b6
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.4.2",
     "leaflet": "^1.9.4",
@@ -55,7 +59,11 @@
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.61.1",
+<<<<<<< HEAD
     "react-leaflet": "^4.2.1",
+=======
+    "react-leaflet": "^5.0.0",
+>>>>>>> 794732a7b4774ea245588221f9b8733fc13d24b6
     "react-resizable-panels": "^2.1.9",
     "react-router-dom": "^6.30.1",
     "recharts": "^2.15.4",

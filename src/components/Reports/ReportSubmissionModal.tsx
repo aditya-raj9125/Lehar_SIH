@@ -189,8 +189,13 @@ export const ReportSubmissionModal = ({
           description: reportData.description,
           location: reportData.location,
           severity: reportData.severity,
+<<<<<<< HEAD
           reporterName: user ? reportData.userName : formData.reporterName,
           reporterContact: user ? undefined : formData.reporterContact,
+=======
+          reporterName: reportData.userName,
+          reporterContact: reportData.reporterContact,
+>>>>>>> 794732a7b4774ea245588221f9b8733fc13d24b6
           images: reportData.images || []
         };
         

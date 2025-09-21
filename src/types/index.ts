@@ -32,7 +32,11 @@ export interface HazardReport {
 
 export interface SocialMediaTrend {
   id: string;
+<<<<<<< HEAD
   platform: 'twitter' | 'facebook' | 'youtube' | 'instagram';
+=======
+  platform: 'twitter' | 'facebook' | 'youtube';
+>>>>>>> 794732a7b4774ea245588221f9b8733fc13d24b6
   keyword: string;
   mentions: number;
   sentiment: 'positive' | 'negative' | 'neutral';

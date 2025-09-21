@@ -14,8 +14,13 @@ export default function OfficialLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [loginData, setLoginData] = useState({
+<<<<<<< HEAD
     email: 'admin@lehar.gov.in',
     password: 'admin123',
+=======
+    email: 'official@incois.gov.in',
+    password: 'password',
+>>>>>>> 794732a7b4774ea245588221f9b8733fc13d24b6
   });
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -24,11 +29,19 @@ export default function OfficialLogin() {
     setError('');
 
     try {
+<<<<<<< HEAD
       const result = await login(loginData.email, loginData.password);
       if (result.success) {
         navigate('/official-dashboard');
       } else {
         setError(result.error || 'Invalid credentials. Please check your email and password.');
+=======
+      const success = await login(loginData.email, loginData.password);
+      if (success) {
+        navigate('/dashboard');
+      } else {
+        setError('Invalid credentials. Please check your email and password.');
+>>>>>>> 794732a7b4774ea245588221f9b8733fc13d24b6
       }
     } catch (err) {
       setError('Login failed. Please try again.');
@@ -80,7 +93,11 @@ export default function OfficialLogin() {
                   required
                 />
                 <p className="text-xs text-muted-foreground">
+<<<<<<< HEAD
                   Demo: admin@lehar.gov.in
+=======
+                  Demo: official@incois.gov.in
+>>>>>>> 794732a7b4774ea245588221f9b8733fc13d24b6
                 </p>
               </div>
               
@@ -95,7 +112,11 @@ export default function OfficialLogin() {
                   required
                 />
                 <p className="text-xs text-muted-foreground">
+<<<<<<< HEAD
                   Demo password: admin123
+=======
+                  Demo password: password
+>>>>>>> 794732a7b4774ea245588221f9b8733fc13d24b6
                 </p>
               </div>
 
